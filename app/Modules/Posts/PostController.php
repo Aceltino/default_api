@@ -2,52 +2,52 @@
 
 namespace App\Modules\Posts;
 
-use App\Core\Database;
+use App\Core\Response;
+use App\Core\Request;
+use App\Modules\Posts\PostService;
+use App\Modules\Posts\PostRequest;
+use App\Middleware\AuthMiddleware;
 
-class PostController {
-    public function index() {
-        $pdo = Database::connect();
-        $stmt = $pdo->query("SELECT * FROM posts");
-        echo json_encode($stmt->fetchAll());
+class PostController 
+{
+    private $postService;
+
+    public function __construct()
+    {
+        (new AuthMiddleware())->handle(Request::capture(), function($request) {});
+        
+        $this->postService = new PostService();
     }
 
-    public function create() {
-        $data = json_decode(file_get_contents('php://input'), true);
-        $pdo = Database::connect();
-
-        $stmt = $pdo->prepare("INSERT INTO posts (title, content, user_id, img) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$data['title'], $data['content'], $data['user_id']]);
-
-        echo json_encode(["message" => "Post created"]);
+    public function index()
+    {
+        $posts = $this->postService->getAllPosts();
+        Response::json($posts);
     }
 
-    public function show() {
-        $id = $_GET['id'] ?? null;
-        $pdo = Database::connect();
-
-        $stmt = $pdo->prepare("SELECT * FROM posts WHERE id = ?");
-        $stmt->execute([$id]);
-
-        echo json_encode($stmt->fetch());
+    public function show($id)
+    {
+        $post = $this->postService->getPostById($id);
+        Response::json($post);
     }
 
-    public function update() {
-        $data = json_decode(file_get_contents('php://input'), true);
-        $pdo = Database::connect();
-
-        $stmt = $pdo->prepare("UPDATE posts SET title = ?, content = ?, img  = ? WHERE id = ?");
-        $stmt->execute([$data['title'], $data['content'], $data['id']]);
-
-        echo json_encode(["message" => "Post updated"]);
+    public function create()
+    {
+        $validatedData = PostRequest::validateCreate();
+        $post = $this->postService->createPost($validatedData);
+        Response::json(['message' => 'Post created', 'data' => $post], 201);
     }
 
-    public function delete() {
-        $data = json_decode(file_get_contents('php://input'), true);
-        $pdo = Database::connect();
+    public function update($id)
+    {
+        $validatedData = PostRequest::validateUpdate();
+        $post = $this->postService->updatePost($id, $validatedData);
+        Response::json(['message' => 'Post updated', 'data' => $post]);
+    }
 
-        $stmt = $pdo->prepare("DELETE FROM posts WHERE id = ?");
-        $stmt->execute([$data['id']]);
-
-        echo json_encode(["message" => "Post deleted"]);
+    public function delete($id)
+    {
+        $this->postService->deletePost($id);
+        Response::json(['message' => 'Post deleted']);
     }
 }
