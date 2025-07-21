@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: default-api
+    runtime: php
+    buildCommand: composer install
+    startCommand: php -S 0.0.0.0:$PORT -t public
+    envVars:
+      APP_ENV: production
+      DB_HOST: sqlXXX.infinityfree.com
+      DB_DATABASE: ifX_XXXXXX
+      DB_USERNAME: ifX_XXXXXX
+      DB_PASSWORD: sua-senha-aqui
