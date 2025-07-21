@@ -39,20 +39,27 @@ class PostModel
         return $pdo->lastInsertId();
     }
 
-    public static function update(int $id, array $data): bool
-    {
-        $pdo = Database::connect();
-        
-        $setClause = implode(' = ?, ', array_keys($data)) . ' = ?';
-        
-        $sql = "UPDATE " . self::$table . " SET $setClause WHERE id = ?";
-        
-        $stmt = $pdo->prepare($sql);
-        $values = array_values($data);
-        $values[] = $id;
-        
-        return $stmt->execute($values);
+public static function update(int $id, array $data): bool
+{
+    $pdo = Database::connect();
+    
+    // Filtrar campos nulos ou vazios
+    $data = array_filter($data, fn($value) => $value !== null && $value !== '');
+    
+    if (empty($data)) {
+        return false;
     }
+    
+    $setClause = implode(' = ?, ', array_keys($data)) . ' = ?';
+    
+    $sql = "UPDATE " . self::$table . " SET $setClause WHERE id = ?";
+    
+    $stmt = $pdo->prepare($sql);
+    $values = array_values($data);
+    $values[] = $id;
+    
+    return $stmt->execute($values);
+}
 
     public static function delete(int $id): bool
     {

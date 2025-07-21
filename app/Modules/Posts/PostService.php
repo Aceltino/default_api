@@ -32,22 +32,43 @@ class PostService
 
     public function createPost($data)
     {
-        // Processar upload de imagem se existir
-        if (isset($_FILES['image'])) {
-            $data['img'] = $this->fileUploadService->upload($_FILES['image']);
+        if (isset($_FILES['img'])) {
+            $data['img'] = $this->fileUploadService->upload($_FILES['img']);
         }
 
         return PostModel::create($data);
     }
 
-    public function updatePost($id, $data)
-    {
-        if (isset($_FILES['image'])) {
-            $data['img'] = $this->fileUploadService->upload($_FILES['image']);
+public function updatePost($id, $data): array
+{
+    // Obter o post atual
+    $currentPost = $this->getPostById($id);
+    
+    // Processar upload de imagem se existir
+    if (isset($data['img']) && is_array($data['img'])) {
+        // Remover imagem antiga se existir
+        if (!empty($currentPost['img'])) {
+            $this->deleteImage($currentPost['img']);
         }
-
-        return PostModel::update($id, $data);
+        
+        $data['img'] = $this->fileUploadService->upload($data['img']);
+        unset($data['img']); // Remover o campo temporário
     }
+    
+    // Mesclar apenas os campos que foram enviados
+    $updateData = array_merge($currentPost, $data);
+    
+    // Remover campos que não devem ser atualizados
+    unset($updateData['id'], $updateData['created_at']);
+    
+    $success = PostModel::update($id, $updateData);
+    
+    if (!$success) {
+        throw new \RuntimeException('Failed to update post', 500);
+    }
+    
+    return $this->getPostById($id);
+}
 
     public function deletePost($id)
     {
@@ -67,4 +88,16 @@ class PostService
             unlink($fullPath);
         }
     }
+
+    public function handleImageUpload(array $file): string
+{
+    try {
+        return $this->fileUploadService->upload($file);
+    } finally {
+        // Garantir que o arquivo temporário seja removido
+        if (file_exists($file['tmp_name'])) {
+            unlink($file['tmp_name']);
+        }
+    }
+}
 }

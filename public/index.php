@@ -17,11 +17,15 @@ $router = new Router();
 $router->add("POST", "/auth/register", [new AuthController, "register"]);
 $router->add("POST", "/auth/login", [new AuthController, "login"]);
 
-// Post routes
-$router->add("GET", "/posts", [new PostController, "index"]);
-$router->add("POST", "/posts", [new PostController, "create"]);
-$router->add("GET", "/posts/show", [new PostController, "show"]);
-$router->add("PUT", "/posts/update", [new PostController, "update"]);
-$router->add("DELETE", "/posts/delete", [new PostController, "delete"]);
+// Post routes (RESTful)
+$router->add("GET", "/posts", [new PostController, "index"]); // Listar todos os posts
+$router->add("POST", "/posts", [new PostController, "create"]); // Criar novo post
+$router->add("GET", "/posts/{id}", [new PostController, "show"]); // Mostrar post específico
+$router->add("PUT", "/posts/{id}", [new PostController, "update"]); // Atualizar post
+$router->add("DELETE", "/posts/{id}", [new PostController, "delete"]); // Deletar post
+
+// Post actions routes
+$router->add("PATCH", "/posts/{id}/views", [new PostController, "incrementViews"]); // Incrementar visualizações
+$router->add("PATCH", "/posts/{id}/rates", [new PostController, "incrementRates"]); // Incrementar avaliações
 
 $router->run();

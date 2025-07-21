@@ -19,7 +19,7 @@ class Validator
                     $errors[$field][] = "O campo $field é obrigatório";
                 }
 
-                // outras validações...
+                // Outras validações... "Não equecer"
             }
 
             if (!isset($errors[$field])) {
@@ -39,4 +39,5 @@ class Validator
 
         return $validated;
     }
+
 }
