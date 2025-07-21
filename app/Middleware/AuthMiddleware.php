@@ -10,7 +10,13 @@ class AuthMiddleware extends \App\Core\Middleware
 {
     // Rotas públicas que não requerem autenticação
     protected array $publicRoutes = [
-        'POST:/auth/login'
+        'POST:/auth/login',
+        'GET:/posts',
+        'GET:/posts/categories',
+        'GET:/posts/category/eventos', //Entendo que bastava um pregMatch para deixar isso mais dinâmico 'GET:/posts/category/{category}'
+        'GET:/posts/category/noticias',
+        'GET:/posts/category/projectos',
+        'GET:/posts/category/voluntariado',
     ];
 
     public function handle($request, $next)
@@ -34,7 +40,7 @@ class AuthMiddleware extends \App\Core\Middleware
     protected function isPublicRoute(Request $request): bool
     {
         $currentRoute = $request->getMethod() . ':' . $request->getPath();
-        
+
         return in_array($currentRoute, $this->publicRoutes);
     }
 }

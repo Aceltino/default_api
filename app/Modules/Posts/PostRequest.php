@@ -10,11 +10,14 @@ class PostRequest
     {
         $data = $_POST;
         $data['img'] = $_FILES['image']['name'] ?? null;
-        print_r($data, true);
+
+        $data['rate'] = isset($data['rate']) ? (int)$data['rate'] : 0;
+        $data['views'] = isset($data['views']) ? (int)$data['views'] : 0;
 
         $validated = Validator::validate($data, [
            'title' => 'required|string|max:255',
             'content' => 'required|string',
+            'category' => 'required|string',
             'rate' => 'sometimes|integer',
             'views' => 'sometimes|integer',
             'user_id' => 'required|integer|exists:users,id',
@@ -29,6 +32,7 @@ public static function validateUpdate($data): array
     $rules = [
         'title' => 'sometimes|string|max:255',
         'content' => 'sometimes|string',
+        'category' => 'sometimes|string',
         'rate' => 'sometimes|integer',
         'views' => 'sometimes|integer',
         'img' => 'sometimes|file|image|max:2048'

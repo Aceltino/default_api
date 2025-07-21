@@ -34,10 +34,24 @@ class PostController
 
     public function create()
     {
+          try {
+        
         $validatedData = PostRequest::validateCreate();
         $post = $this->postService->createPost($validatedData);
-        Response::json(['message' => 'Post created', 'data' => $post], 201);
+        Response::json([
+            'success' => true,
+            'message' => 'Post created successfully',
+            'data' => $post
+        ], 201);
     }
+    catch (\Exception $e) {
+        Response::json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], $e->getCode() ?: 500);
+    }
+
+}
 
     public function update($id)
     {
@@ -46,12 +60,10 @@ class PostController
 
         if (strpos($contentType, 'multipart/form-data') !== false && $_SERVER['REQUEST_METHOD'] === 'PUT') {
             $data = RequestParser::parsePutFormData();
-                    print_r("Dados: " . print_r($data, true));
-
+            print_r("Dados: " . print_r($data, true));
         } else {
             $data = array_merge($_POST, $_FILES);
-                    print_r("Dados recebidos: " . print_r($data, true));
-
+            print_r("Dados recebidos: " . print_r($data, true));
         }
 
         // Validação
@@ -101,5 +113,25 @@ class PostController
             'error' => 0,
             'size' => $fileData['size']
         ];
+    }
+
+    public function getByCategory($category)
+    {
+        try {
+            $posts = $this->postService->getPostsByCategory($category);
+            Response::json($posts);
+        } catch (\Exception $e) {
+            Response::json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function categories()
+    {
+        try {
+            $categories = $this->postService->getAllCategories();
+            Response::json($categories);
+        } catch (\Exception $e) {
+            Response::json(['error' => $e->getMessage()], 500);
+        }
     }
 }
